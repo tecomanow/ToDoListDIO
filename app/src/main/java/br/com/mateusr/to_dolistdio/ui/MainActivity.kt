@@ -4,7 +4,9 @@ import android.app.AlarmManager
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import br.com.mateusr.to_dolistdio.adapter.TaskAdapter
@@ -19,6 +21,8 @@ class MainActivity : AppCompatActivity() {
         MainActivityViewModel.MainViewModelFactory(application)
     }
 
+    //private val taskList = mutableListOf<Task>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         binding = ActivityMainBinding.inflate(layoutInflater)
         super.onCreate(savedInstanceState)
@@ -28,6 +32,7 @@ class MainActivity : AppCompatActivity() {
         //mainActivityViewModel by viewModels
         //mainActivityViewModel.init()
 
+        //configureRecyclerView()
         initListener()
         initObserver()
         setEmptyVisibility(false)
@@ -45,6 +50,7 @@ class MainActivity : AppCompatActivity() {
             if(it.isNotEmpty()){
                 populateTaskInRecyclerView(it)
                 setEmptyVisibility(false)
+
                 //Toast.makeText(this, it.size.toString(), Toast.LENGTH_SHORT).show()
                 //Log.d("InsertBD", it.size.toString())
             }else{
@@ -61,16 +67,41 @@ class MainActivity : AppCompatActivity() {
         binding.fabNewTask.setOnClickListener {
             startActivity(Intent(this, AddNewTaskActivity::class.java))
         }
-
     }
 
-    private fun populateTaskInRecyclerView(taskList : List<Task>){
+    private fun populateTaskInRecyclerView(taskList: List<Task>) {
         binding.apply {
+
+            val adapterTask = TaskAdapter(taskList)
+            adapterTask.listenerDelete = {
+                mainActivityViewModel.taskRepository.delete(it)
+                //Toast.makeText(this@MainActivity, "Delete Pressed", Toast.LENGTH_SHORT).show()
+            }
+
+            adapterTask.listenerEdit = {
+                val i = Intent(this@MainActivity, AddNewTaskActivity::class.java)
+                i.putExtra("taskId", it.id)
+                startActivity(i)
+            }
+
+            recyclerViewTasks.run {
+                hasFixedSize()
+                layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
+                adapter = adapterTask
+            }
+        }
+    }
+
+    /*private fun configureRecyclerView(){
+        binding.apply {
+
+            val adapter = TaskAdapter(taskList)
+
             recyclerViewTasks.run {
                 hasFixedSize()
                 layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
                 adapter = TaskAdapter(taskList)
             }
         }
-    }
+    }*/
 }

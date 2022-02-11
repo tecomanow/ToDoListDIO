@@ -1,4 +1,4 @@
-package br.com.mateusr.to_dolistdio.model
+package br.com.mateusr.to_dolistdio.data.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -17,5 +17,7 @@ data class Task(
     @ColumnInfo (name = "description")
     val description : String,
     @ColumnInfo (name = "notification")
-    val notification : Int
+    val notification : Int,
+    @ColumnInfo(name = "complete")
+    val complete : Int
 )

@@ -1,18 +1,15 @@
 package br.com.mateusr.to_dolistdio.ui
 
-import android.app.AlarmManager
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import br.com.mateusr.to_dolistdio.adapter.TaskAdapter
+import br.com.mateusr.to_dolistdio.ui.adapter.TaskAdapter
 import br.com.mateusr.to_dolistdio.databinding.ActivityMainBinding
-import br.com.mateusr.to_dolistdio.helper.AlarmHelper
-import br.com.mateusr.to_dolistdio.model.Task
+import br.com.mateusr.to_dolistdio.data.model.Task
+import br.com.mateusr.to_dolistdio.viewmodels.MainActivityViewModel
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,34 +25,27 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        //mainActivityViewModel = ViewModelProvider(this).get(MainActivityViewModel::class.java)
-        //mainActivityViewModel by viewModels
         //mainActivityViewModel.init()
 
-        //configureRecyclerView()
         initListener()
         initObserver()
         setEmptyVisibility(false)
 
-        /*val alarmHelper = AlarmHelper()
-        alarmHelper.setAlarm(this, System.currentTimeMillis(), "TESTE NOTIFICATION")*/
     }
 
     private fun initObserver(){
 
         mainActivityViewModel.getAllTask().observe(this) {
 
-            //Toast.makeText(this, it.size.toString(), Toast.LENGTH_SHORT).show()
-
             if(it.isNotEmpty()){
-                populateTaskInRecyclerView(it)
                 setEmptyVisibility(false)
-
-                //Toast.makeText(this, it.size.toString(), Toast.LENGTH_SHORT).show()
-                //Log.d("InsertBD", it.size.toString())
             }else{
+                //Toast.makeText(this, "Lista não vazia: ${it.size}", Toast.LENGTH_SHORT).show()
                 setEmptyVisibility(true)
             }
+
+            populateTaskInRecyclerView(it)
+
         }
     }
 
@@ -73,9 +63,9 @@ class MainActivity : AppCompatActivity() {
         binding.apply {
 
             val adapterTask = TaskAdapter(taskList)
+
             adapterTask.listenerDelete = {
-                mainActivityViewModel.taskRepository.delete(it)
-                //Toast.makeText(this@MainActivity, "Delete Pressed", Toast.LENGTH_SHORT).show()
+                mainActivityViewModel.deleteTask(it)
             }
 
             adapterTask.listenerEdit = {
@@ -84,24 +74,27 @@ class MainActivity : AppCompatActivity() {
                 startActivity(i)
             }
 
+            adapterTask.listenerCheckBox = { task: Task, b: Boolean ->
+
+                val taskUpdated = Task(
+                    task.id,
+                    task.title,
+                    task.date,
+                    task.hour,
+                    task.description,
+                    task.notification,
+                    if(b) 1 else 0
+                )
+
+                mainActivityViewModel.updateTask(taskUpdated)
+            }
+
             recyclerViewTasks.run {
                 hasFixedSize()
                 layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
                 adapter = adapterTask
             }
+
         }
     }
-
-    /*private fun configureRecyclerView(){
-        binding.apply {
-
-            val adapter = TaskAdapter(taskList)
-
-            recyclerViewTasks.run {
-                hasFixedSize()
-                layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
-                adapter = TaskAdapter(taskList)
-            }
-        }
-    }*/
 }

@@ -1,12 +1,14 @@
-package br.com.mateusr.to_dolistdio.adapter
+package br.com.mateusr.to_dolistdio.ui.adapter
 
+import android.graphics.Paint
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import br.com.mateusr.to_dolistdio.R
 import br.com.mateusr.to_dolistdio.databinding.AdapterTaskBinding
-import br.com.mateusr.to_dolistdio.model.Task
+import br.com.mateusr.to_dolistdio.data.model.Task
 
 class TaskAdapter(
     private val tasks : List<Task>
@@ -14,6 +16,7 @@ class TaskAdapter(
 
     var listenerEdit : (t : Task) -> Unit = {}
     var listenerDelete : (t : Task) -> Unit = {}
+    var listenerCheckBox : (t : Task, checked : Boolean) -> Unit = { task: Task, b: Boolean -> }
 
     inner class MyTaskViewHolder(private val binding: AdapterTaskBinding) : RecyclerView.ViewHolder(binding.root){
 
@@ -22,13 +25,29 @@ class TaskAdapter(
         val imgBtnShowPopUp : ImageButton = itemView.findViewById(R.id.imageButtonShowPopUp)*/
 
         fun bind(task : Task){
+
             binding.apply {
                 textViewAdapterTitle.text = task.title
                 textViewAdapterTime.text = "${task.date} às ${task.hour}"
+                textViewAdapterDescription.text = task.description
+
+                textViewAdapterDescription.visibility  = if (task.description == "") View.GONE else View.VISIBLE
 
                 imageButtonShowPopUp.setOnClickListener {
                     showPopUpMenu(task)
                 }
+
+                if(task.complete == 1){
+                    textViewAdapterTitle.paintFlags = (textViewAdapterTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG)
+                    textViewAdapterTime.paintFlags = (textViewAdapterTime.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG)
+                    checkBoxCompleted.isChecked = true
+                }
+
+                checkBoxCompleted.setOnCheckedChangeListener { compoundButton, b ->
+                    listenerCheckBox(task, b)
+                }
+
+
             }
         }
 

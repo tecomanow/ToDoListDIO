@@ -15,8 +15,8 @@
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@+id/imageButtonShowPopUp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/checkBoxCompleted"
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
         android:id="@+id/textViewAdapterTime"
@@ -25,8 +25,18 @@
         android:text="dd/MM/yyyy às 10:50"
         android:textColor="@color/black"
         app:layout_constraintEnd_toStartOf="@+id/imageButtonShowPopUp"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/checkBoxCompleted"
         app:layout_constraintTop_toBottomOf="@id/textViewAdapterTitle" />
+
+    <TextView
+        android:id="@+id/textViewAdapterDescription"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="dd/MM/yyyy às 10:50"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toStartOf="@+id/imageButtonShowPopUp"
+        app:layout_constraintStart_toEndOf="@+id/checkBoxCompleted"
+        app:layout_constraintTop_toBottomOf="@id/textViewAdapterTime" />
 
     <ImageButton
         android:id="@+id/imageButtonShowPopUp"
@@ -38,13 +48,22 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <CheckBox
+        android:id="@+id/checkBoxCompleted"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/view"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <View
+        android:id="@+id/view"
         android:layout_width="0dp"
         android:layout_height="0.5dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewAdapterTime"
         android:layout_marginTop="16dp"
-        android:background="@color/gray"/>
+        android:background="@color/gray"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewAdapterDescription" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

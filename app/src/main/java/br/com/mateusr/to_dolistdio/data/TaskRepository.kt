@@ -1,6 +1,7 @@
 package br.com.mateusr.to_dolistdio.data
 
-import br.com.mateusr.to_dolistdio.model.Task
+import br.com.mateusr.to_dolistdio.data.daos.TaskDao
+import br.com.mateusr.to_dolistdio.data.model.Task
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -26,5 +27,7 @@ class TaskRepository(private val dao : TaskDao) {
     }
 
     fun getAllTask() = dao.getAll()
+
+    fun getTaskById(id : Int) = dao.getTaskById(id)
 
 }

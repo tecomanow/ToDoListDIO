@@ -1,11 +1,11 @@
-package br.com.mateusr.to_dolistdio.database
+package br.com.mateusr.to_dolistdio.data
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import br.com.mateusr.to_dolistdio.data.TaskDao
-import br.com.mateusr.to_dolistdio.model.Task
+import br.com.mateusr.to_dolistdio.data.daos.TaskDao
+import br.com.mateusr.to_dolistdio.data.model.Task
 
 @Database (entities = [Task::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {

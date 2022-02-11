@@ -6,7 +6,8 @@ import android.view.MenuItem
 import androidx.activity.viewModels
 import br.com.mateusr.to_dolistdio.databinding.ActivityAddNewTaskBinding
 import br.com.mateusr.to_dolistdio.helper.AlarmHelper
-import br.com.mateusr.to_dolistdio.model.Task
+import br.com.mateusr.to_dolistdio.data.model.Task
+import br.com.mateusr.to_dolistdio.viewmodels.MainActivityViewModel
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
@@ -26,6 +27,7 @@ class AddNewTaskActivity : AppCompatActivity() {
     private var dateToNotification : Long = 0
     private var hourToNotification : Long = 0
 
+    private var idTask = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         binding = ActivityAddNewTaskBinding.inflate(layoutInflater)
@@ -35,7 +37,31 @@ class AddNewTaskActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbarNewTask)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        idTask = intent.getIntExtra("taskId", 0)
+        if(idTask > 0){
+            supportActionBar?.title = "Editar tarefa"
+            binding.btnConfirmTask.text = "Atualizar"
+        }
+        //Toast.makeText(this, "TaskId : $idTask", Toast.LENGTH_SHORT).show()
+
+        configureViews(idTask)
         initListener()
+    }
+
+    private fun configureViews(idTask: Int) {
+
+        mainActivityViewModel.findTaskById(idTask).observe(this) {
+            it?.let {
+            binding.apply {
+                editTextTitle.setText(it.title)
+                editTextDate.setText(it.date)
+                editTextHour.setText(it.hour)
+                edtiTextDescription.setText(it.description)
+                checkBoxNotificationTask.isChecked = it.notification == 1
+                notification = it.notification
+            }
+        }
+        }
     }
 
     private fun validateInputs() : Boolean{
@@ -70,16 +96,35 @@ class AddNewTaskActivity : AppCompatActivity() {
         binding.btnConfirmTask.setOnClickListener {
             if(validateInputs()){
 
-                val task = Task(
-                    0,
-                    binding.editTextTitle.text.toString(),
-                    binding.editTextDate.text.toString(),
-                    binding.editTextHour.text.toString(),
-                    binding.edtiTextDescription.text.toString(),
-                    notification
-                )
+                if(idTask > 0){
 
-                saveTask(task)
+                    val task = Task(
+                        idTask,
+                        binding.editTextTitle.text.toString(),
+                        binding.editTextDate.text.toString(),
+                        binding.editTextHour.text.toString(),
+                        binding.edtiTextDescription.text.toString(),
+                        notification,
+                        0
+                    )
+
+                    updateTask(task)
+
+                }else {
+
+                    val task = Task(
+                        0,
+                        binding.editTextTitle.text.toString(),
+                        binding.editTextDate.text.toString(),
+                        binding.editTextHour.text.toString(),
+                        binding.edtiTextDescription.text.toString(),
+                        notification,
+                        0
+                    )
+
+                    saveTask(task)
+                }
+
             }
         }
 
@@ -88,45 +133,81 @@ class AddNewTaskActivity : AppCompatActivity() {
         }
 
         binding.editTextDate.setOnClickListener {
-            val datePicker = MaterialDatePicker.Builder.datePicker().build()
-            datePicker.addOnPositiveButtonClickListener {
-                val timeZone = TimeZone.getDefault()
-                val offset = timeZone.getOffset(Date().time) * -1
-
-                val date = Date(it + offset)
-                val dateFormated = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")).format(date)
-                binding.editTextDate.setText(dateFormated)
-
-                dateToNotification = it
-            }
-            datePicker.show(supportFragmentManager, "datePicker")
+            createDatePicker()
         }
 
         binding.editTextHour.setOnClickListener {
-            val timePicker = MaterialTimePicker.Builder()
-                .setTimeFormat(TimeFormat.CLOCK_24H)
-                .build()
+            createTimerPicker()
+        }
+    }
 
-                timePicker.addOnPositiveButtonClickListener {
-                    val time = String.format(Locale("pt", "BR"),"%02d:%02d", timePicker.hour, timePicker.minute)
-                    binding.editTextHour.setText(time)
+    private fun createTimerPicker() {
+        val timePicker = MaterialTimePicker.Builder()
+            .setTimeFormat(TimeFormat.CLOCK_24H)
+            .build()
 
-                    val c = Calendar.getInstance()
-                    //c.timeInMillis = dateToNotification
-                    c.set(Calendar.HOUR, timePicker.hour)
-                    c.set(Calendar.MINUTE, timePicker.minute)
+        timePicker.addOnPositiveButtonClickListener {
+            val time = String.format(Locale("pt", "BR"),"%02d:%02d", timePicker.hour, timePicker.minute)
+            binding.editTextHour.setText(time)
 
-                    hourToNotification = c.timeInMillis
-                }
-                timePicker.show(supportFragmentManager, "timePicker")
+            val c = Calendar.getInstance()
+            //c.timeInMillis = dateToNotification
+            c.set(Calendar.HOUR, timePicker.hour)
+            c.set(Calendar.MINUTE, timePicker.minute)
 
+            hourToNotification = c.timeInMillis
+        }
+        timePicker.show(supportFragmentManager, "timePicker")
+    }
+
+    private fun createDatePicker() {
+        val datePicker = MaterialDatePicker.Builder.datePicker().build()
+        datePicker.addOnPositiveButtonClickListener {
+            val timeZone = TimeZone.getDefault()
+            val offset = timeZone.getOffset(Date().time) * -1
+
+            val date = Date(it + offset)
+            val dateFormated = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")).format(date)
+            binding.editTextDate.setText(dateFormated)
+
+            dateToNotification = it
+        }
+        datePicker.show(supportFragmentManager, "datePicker")
+    }
+
+    private fun createNotification(t: Task) {
+        val cHour = Calendar.getInstance()
+        cHour.timeInMillis = hourToNotification
+
+        val c = Calendar.getInstance()
+        c.timeInMillis = dateToNotification
+        c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH)+1)
+        c.set(Calendar.HOUR, cHour.get(Calendar.HOUR))
+        c.set(Calendar.MINUTE, cHour.get(Calendar.MINUTE))
+
+        val alarmHelper = AlarmHelper()
+        alarmHelper.setAlarm(this, c.timeInMillis, t.title)
+    }
+
+    private fun updateTask(task: Task) {
+        try {
+            mainActivityViewModel.updateTask(task)
+            if(notification == 1){
+                createNotification(task)
+            }else{
+                val alarmHelper = AlarmHelper()
+                alarmHelper.cancelAlarm(this)
+            }
+            finish()
+        } catch (e : Exception){
+            e.printStackTrace()
         }
     }
 
     private fun saveTask(t: Task) {
 
         try {
-            mainActivityViewModel.taskRepository.insert(t)
+            mainActivityViewModel.insertTask(t)
             if(notification == 1){
                 createNotification(t)
             }
@@ -144,20 +225,6 @@ class AddNewTaskActivity : AppCompatActivity() {
 //        } else {
 //            Toast.makeText(this, "Algo deu errado", Toast.LENGTH_SHORT).show()
 //        }
-    }
-
-    private fun createNotification(t: Task) {
-        val cHour = Calendar.getInstance()
-        cHour.timeInMillis = hourToNotification
-
-        val c = Calendar.getInstance()
-        c.timeInMillis = dateToNotification
-        c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH)+1)
-        c.set(Calendar.HOUR, cHour.get(Calendar.HOUR))
-        c.set(Calendar.MINUTE, cHour.get(Calendar.MINUTE))
-
-        val alarmHelper = AlarmHelper()
-        alarmHelper.setAlarm(this, c.timeInMillis, t.title)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

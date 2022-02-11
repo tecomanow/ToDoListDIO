@@ -1,8 +1,8 @@
-package br.com.mateusr.to_dolistdio.data
+package br.com.mateusr.to_dolistdio.data.daos
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import br.com.mateusr.to_dolistdio.model.Task
+import br.com.mateusr.to_dolistdio.data.model.Task
 
 @Dao
 interface TaskDao {
@@ -17,4 +17,7 @@ interface TaskDao {
 
     @Query("SELECT * FROM Task")
     fun getAll() : LiveData<List<Task>>
+
+    @Query("SELECT * FROM Task WHERE id == :id")
+    fun getTaskById(id : Int) : LiveData<Task?>
 }

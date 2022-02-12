@@ -32,7 +32,7 @@ git clone https://github.com/tecomanow/ToDoListDIO
 
 Abrir no android Studios e rodar a aplicação
 
-## ScreenShots :dash:
+## ScreenShots
 
 > ![](https://github.com/tecomanow/ToDoListDIO/blob/main/screenshots.png?raw=true)
 
